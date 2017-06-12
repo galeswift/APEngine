@@ -58,17 +58,24 @@ public:
 	~GameCommon();
 	virtual void Init();
 	void Draw(sf::RenderWindow* window);
-	void Update(float dt);
+	virtual void Update(float dt);
 
 	Entity* CreateEntity();
 	void RegisterSystem(System* system);
 
 	void SetRenderSystem(RenderingSystem* system) { m_renderSystem = system;  }
 	RenderingSystem* GetRenderSystem() { return m_renderSystem;  }
+
+	void SetPaused(bool paused) { m_paused = paused; }
+	void TogglePause() { m_paused = !m_paused; }
+	bool IsPaused() { return m_paused; }
+	void AdvanceFrames(int count) { m_advanceFrameCount += count; }
 private:
 	std::vector<System*> m_systems;
 	std::vector<Entity*> m_objects;
 	RenderingSystem* m_renderSystem;
+	bool m_paused;
+	int m_advanceFrameCount;
 };
 
 extern GameCommon* g_clientGame;

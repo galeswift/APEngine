@@ -109,12 +109,14 @@ public:
     class DungeonGenerationState
     {
     public:
-        virtual void Init(DungeonComponent* comp) {m_owner = comp;} 
+		virtual void Init(DungeonComponent* comp) { m_finished = false;  m_owner = comp; }
 		virtual void Update(float dt) {m_delay -= dt;}
         virtual void Draw(sf::RenderWindow* window) {};
+		bool Finished() { return m_finished; }
     protected:
         DungeonComponent* m_owner;
-		float m_delay;
+		float m_delay;		
+		bool m_finished;
     };
     
     class DungeonGenerationState_CreateCells : public DungeonGenerationState
@@ -126,6 +128,7 @@ public:
     class DungeonGenerationState_Separate : public DungeonGenerationState
     {
     public:
+		virtual void Draw(sf::RenderWindow* window);
         virtual void Update(float dt);
     };
     
@@ -155,6 +158,12 @@ public:
 		virtual void Init(DungeonComponent* comp);
 	};
 
+	class DungeonGenerationState_MakeLinksIntoHallways : public DungeonGenerationState
+	{
+	public:
+		virtual void Init(DungeonComponent* comp);
+	};
+
     DungeonComponent();
     virtual void Init(Entity* entity);
 	virtual void Reset();
@@ -166,6 +175,7 @@ public:
     std::vector<Cell> m_cells;	
 	std::vector<Edge> m_mstEdges;
     std::vector<Cell> m_rooms;
+	std::vector<Cell> m_hallways;
 	Grid m_grid;
     DungeonGenerationState* m_state;
 };

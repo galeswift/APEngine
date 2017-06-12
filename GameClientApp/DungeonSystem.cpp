@@ -9,7 +9,7 @@
 #include "DungeonSystem.h"
 #include "DungeonComponent.h"
 #include "Entity.h"
-#include "Game.h"
+#include "Game_C.h"
 
 void DungeonSystem::Init(GameCommon* owner)
 {
@@ -21,16 +21,8 @@ void DungeonSystem::Init(GameCommon* owner)
 }
 
 void DungeonSystem::Update(float dt)
-{
-    {
-        ComponentPool<DungeonComponent>::Iterator it(&DungeonComponent::Pool);
-        for (it.First() ; it.Current() ; it.Next())
-        {
-            it.Current()->Update(dt);
-        }
-    }
-
-	if (sf::Keyboard::isKeyPressed(sf::Keyboard::P))
+{	
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::M))
 	{
 		ComponentPool<DungeonComponent>::Iterator it(&DungeonComponent::Pool);
 		for (it.First(); it.Current(); it.Next())
@@ -47,4 +39,16 @@ void DungeonSystem::Update(float dt)
 			it.Current()->Reset();
 		}
 	}
+
+	if (m_owner->IsPaused())
+	{
+		return;
+	}
+
+    ComponentPool<DungeonComponent>::Iterator it(&DungeonComponent::Pool);
+    for (it.First() ; it.Current() ; it.Next())
+    {
+        it.Current()->Update(dt);
+    }
+
 }

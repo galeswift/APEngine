@@ -17,6 +17,8 @@ std::random_device Random::s_rd;
 std::linear_congruential_engine<uint_fast32_t, 48271, 0, 2147483647> Random::s_re(Random::s_rd());
 
 GameCommon::GameCommon()
+	: m_paused(false)
+	, m_advanceFrameCount(0)
 {};
 
 GameCommon::~GameCommon()
@@ -41,15 +43,25 @@ void GameCommon::Draw(sf::RenderWindow* window)
 		(*it)->Draw(window);
 	}
 }
-
+#pragma optimize("",off)
 void GameCommon::Update(float dt)
 {
+	if (m_advanceFrameCount > 0)
+	{
+		SetPaused(false);
+		m_advanceFrameCount--;
+		if (m_advanceFrameCount <= 0)
+		{
+			SetPaused(true);
+		}
+	}
+
 	for (std::vector<System*>::iterator it = m_systems.begin(); it != m_systems.end(); it++)
 	{
 		(*it)->Update(dt);
 	}
 }
-
+#pragma optimize("",on)
 Entity* GameCommon::CreateEntity()
 {
 	Entity* newEntity = new Entity();

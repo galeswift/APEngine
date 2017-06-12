@@ -63,8 +63,14 @@ int main(int argc, char** argv)
             }
 
             // Escape pressed: exit
-            if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Escape) {
-                window.close();
+            if (event.type == sf::Event::KeyPressed) 
+			{
+				if (event.key.code == sf::Keyboard::Escape)
+					window.close();
+				if (event.key.code == sf::Keyboard::P)
+					g_clientGame->TogglePause();
+				if (event.key.code == sf::Keyboard::RBracket)
+					g_clientGame->AdvanceFrames(2);
             }
         }
         
@@ -72,7 +78,7 @@ int main(int argc, char** argv)
         deltaClock.restart();
        
         static float UPDATE_INTERVAL = 1.0f/60.0f;
-        static float MAX_CYCLES_PER_FRAME = 10;
+        static float MAX_CYCLES_PER_FRAME = 50;
         if (accumulatedTime > (MAX_CYCLES_PER_FRAME * UPDATE_INTERVAL)) {
             accumulatedTime = MAX_CYCLES_PER_FRAME * UPDATE_INTERVAL;
         }

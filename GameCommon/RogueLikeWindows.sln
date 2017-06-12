@@ -17,6 +17,9 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GameClientApp", "..\GameCli
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GameServerApp", "..\GameServerApp\GameServerApp.vcxproj", "{23493449-27F6-4DDB-8916-E279F0DFC336}"
+	ProjectSection(ProjectDependencies) = postProject
+		{AEFF76FD-7927-43FE-9396-27BA7ABBF7AD} = {AEFF76FD-7927-43FE-9396-27BA7ABBF7AD}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RakNet", "..\Raknet\Source\RakNet.vcxproj", "{143F9B67-C223-4F2D-B8F9-B644CA710CA6}"
 EndProject
@@ -48,7 +51,8 @@ Global
 		{E13A616A-7528-462A-9A18-DFBFDB606824}.Debug|x64.Build.0 = Debug|x64
 		{E13A616A-7528-462A-9A18-DFBFDB606824}.Debug|x86.ActiveCfg = Debug|Win32
 		{E13A616A-7528-462A-9A18-DFBFDB606824}.Debug|x86.Build.0 = Debug|Win32
-		{E13A616A-7528-462A-9A18-DFBFDB606824}.Release|x64.ActiveCfg = Release|Win32
+		{E13A616A-7528-462A-9A18-DFBFDB606824}.Release|x64.ActiveCfg = Release|x64
+		{E13A616A-7528-462A-9A18-DFBFDB606824}.Release|x64.Build.0 = Release|x64
 		{E13A616A-7528-462A-9A18-DFBFDB606824}.Release|x86.ActiveCfg = Release|Win32
 		{E13A616A-7528-462A-9A18-DFBFDB606824}.Release|x86.Build.0 = Release|Win32
 		{23493449-27F6-4DDB-8916-E279F0DFC336}.Debug|x64.ActiveCfg = Debug|x64

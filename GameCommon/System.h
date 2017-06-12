@@ -21,7 +21,7 @@ public:
     virtual void Update(float f32){};
 	GameCommon* GetOwner();
     
-private:
+protected:
     GameCommon* m_owner;
 };
 

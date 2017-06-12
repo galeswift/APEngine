@@ -9,23 +9,23 @@
 #include "DungeonComponent.h"
 #include "Entity.h"
 #include "VectorMath.h"
-#include "Game.h"
+#include "Game_C.h"
 
 IMPLEMENT_COMPONENT(DungeonComponent);
-#define CELL_THICKNESS 10
-#define CELL_COUNT_MIN 50
+#define CELL_COUNT_MIN 125
 #define CELL_COUNT_MAX 150
-#define CELL_MEAN 15
-#define CELL_RANGE 4
-#define CELL_ROOM_MIN (CELL_MEAN * .99)
-#define CELL_RADIUS (CELL_COUNT_MAX/2)
+#define CELL_MEAN 150
+#define CELL_RANGE 55
+#define CELL_EXTRA_SPACE 25
+#define CELL_ROOM_MIN (CELL_MEAN * .8)
+#define CELL_RADIUS (CELL_COUNT_MAX)
 #define CELL_SPAWN_ORIGIN (sf::Vector2i(-GRID_ROWS * 0.5,-GRID_COLS * 0.5))
-#define EXTRA_EDGE_PERCENT (.1)
+#define EXTRA_EDGE_PERCENT (.15)
 
 #define GRID_SCALE (10.0f)
 #define GRID_ROWS (50)
 #define GRID_COLS (50)
-#define GRID_CELL_SIZE (CELL_THICKNESS * GRID_SCALE)
+#define GRID_CELL_SIZE (10 * GRID_SCALE)
 #define GRID_OFFSET (sf::Vector2i(0,0))
 Cell::Cell() :
     m_velocity(0.0f,0.0f),
@@ -37,10 +37,9 @@ Cell::Cell() :
 }
 
 void Cell::AddForce(const sf::Vector2f &force)
-{
-	printf("Adding force[%f,%f]\n", force.x, force.y);
-    m_velocity.x += force.x;
-    m_velocity.y += force.y;
+{	
+    m_velocity.x += (int)force.x;
+    m_velocity.y += (int)force.y;
 }
 
 void Cell::AddConnectedCell(Cell* other)
@@ -111,8 +110,9 @@ void Cell::SetColor(const sf::Color& color)
 
 void Cell::__UpdateRenderShape()
 {
-    m_renderShape.setSize(sf::Vector2f(m_dimensions.x * CELL_THICKNESS, m_dimensions.y * CELL_THICKNESS));
-    m_renderShape.setOrigin(sf::Vector2f(m_pos.x * CELL_THICKNESS,m_pos.y*CELL_THICKNESS));
+    m_renderShape.setSize(sf::Vector2f(m_dimensions.x, m_dimensions.y));
+    m_renderShape.setPosition(sf::Vector2f(m_pos.x,m_pos.y));
+	m_renderShape.setOrigin(sf::Vector2f(m_dimensions.x * 0.5f, m_dimensions.y * 0.5f));
     
     if (IsRoom())
     {
@@ -127,12 +127,6 @@ void Cell::__UpdateRenderShape()
 void DungeonComponent::DungeonGenerationState_CreateCells::Init(DungeonComponent* comp)
 {
     DungeonGenerationState::Init(comp);
-	for ( int i=0 ; i< 1000 ; i++)
-	{
-		printf("[%f] ", Random::Next<double>(0.0, CELL_RADIUS));
-	}
-
-	printf ("\n");
     int numCells = Random::Next(CELL_COUNT_MIN,CELL_COUNT_MAX);
     for( int i=0 ; i<numCells ; i++)
     {
@@ -151,23 +145,46 @@ void DungeonComponent::DungeonGenerationState_CreateCells::Init(DungeonComponent
     comp->SetState(new DungeonGenerationState_Separate());
 }
 
-void DungeonComponent::DungeonGenerationState_Separate::Update(float dt)
+void DungeonComponent::DungeonGenerationState_Separate::Draw(sf::RenderWindow* window)
 {
-    bool finished = true;
+	static sf::Font* font = NULL;
+
+	if (font == NULL)
+	{
+		font = new sf::Font();
+		font->loadFromFile("Content\\sansation.ttf");
+	}
+
+	for (int i = 0; i < m_owner->m_cells.size(); i++)
+	{
+		Cell* cell = &m_owner->m_cells[i];
+		sf::Text weightTxt;
+		weightTxt.setFont(*font);
+		weightTxt.setCharacterSize(60);
+		weightTxt.setColor(sf::Color::Red);
+		weightTxt.setString(std::to_string(i));
+		weightTxt.setPosition(cell->GetPos().x, cell->GetPos().y);
+		window->draw(weightTxt);
+	}	
+}
+
+void DungeonComponent::DungeonGenerationState_Separate::Update(float dt)
+{		
+	m_finished = true;
     size_t sizeA = m_owner->m_cells.size();
     size_t sizeB = m_owner->m_cells.size();
     for (int i=0 ; i<sizeA; i++)
     {
-		Cell& cellA = m_owner->m_cells[i];
-		if (cellA.IsDestroyed())
+		Cell* cellA = &m_owner->m_cells[i];
+		if (cellA->IsDestroyed())
 		{
 			continue;
 		}
 
         for (int j=0 ; j<sizeB ; j++)
         {
-			Cell& cellB = m_owner->m_cells[j];
-			if (cellB.IsDestroyed())
+			Cell* cellB = &m_owner->m_cells[j];
+			if (cellB->IsDestroyed())
 			{
 				continue;
 			}
@@ -176,42 +193,51 @@ void DungeonComponent::DungeonGenerationState_Separate::Update(float dt)
                 continue;
             }
             else
-            {
-                const sf::RectangleShape* a = cellA.GetShape();
-                const sf::RectangleShape* b = cellB.GetShape();
+            {			
+                const sf::RectangleShape* a = cellA->GetShape();
+                const sf::RectangleShape* b = cellB->GetShape();
                 
-                const sf::FloatRect* myBounds = cellA.GetGlobalBounds();
-                const sf::FloatRect* otherBounds = cellB.GetGlobalBounds();
-				if (abs((int)(a->getOrigin().x - b->getOrigin().x)) > (2 * CELL_THICKNESS * (CELL_MEAN)) ||
-					abs((int)(a->getOrigin().y - b->getOrigin().y)) > (2 * CELL_THICKNESS * (CELL_MEAN)) )
+                sf::FloatRect myBounds = *cellA->GetGlobalBounds();
+                sf::FloatRect otherBounds = *cellB->GetGlobalBounds();
+				myBounds.height += CELL_EXTRA_SPACE;
+				myBounds.width += CELL_EXTRA_SPACE;
+				myBounds.left -= CELL_EXTRA_SPACE;
+				myBounds.top -= CELL_EXTRA_SPACE;
+
+				otherBounds.height += CELL_EXTRA_SPACE;
+				otherBounds.width += CELL_EXTRA_SPACE;
+				otherBounds.left -= CELL_EXTRA_SPACE;
+				otherBounds.top -= CELL_EXTRA_SPACE;
+				
+				if (abs((int)(a->getPosition().x - b->getPosition().x)) > (2 * (CELL_MEAN)) ||
+					abs((int)(a->getPosition().y - b->getPosition().y)) > (2 * (CELL_MEAN)) )
 				{
 					continue;
 				}
 
-                if (myBounds->intersects(*otherBounds))
-                {
-                    finished = false;
-                    sf::Vector2f fromCell = VectorMath::Sub(b->getOrigin(), a->getOrigin());
-					printf("b[%d] origin was [%f,%f]\t",j, b->getOrigin().x, b->getOrigin().y);
-					printf("a[%d] origin was [%f,%f]\n",i, a->getOrigin().x, a->getOrigin().y);
+                if (myBounds.intersects(otherBounds))
+                {					
+					m_finished = false;
+                    sf::Vector2f fromCell = VectorMath::Sub(a->getPosition(), b->getPosition());
+					float distance = VectorMath::Mag(fromCell);
 					fromCell = VectorMath::Normalize(fromCell);
                
 					// Two rectangles sharing the same position
                     if (fromCell.x == 0 && fromCell.y ==0)
                     {
-						cellB.Destroy();
+						cellB->Destroy();					
                     }
 					else
 					{
-						printf("fromCell is [%f,%f]\n", fromCell.x, fromCell.y);
-						cellA.AddForce(VectorMath::Mul(fromCell, -1.0/VectorMath::Mag(fromCell)));
+						float force = 500 / distance;
+						cellA->AddForce(fromCell * force);
 					}					
                 }
             }
         }
     }
     
-    if (finished)
+    if (m_finished)
     {
         for (int i=0 ; i<m_owner->m_cells.size(); i++)
         {
@@ -225,7 +251,7 @@ void DungeonComponent::DungeonGenerationState_Separate::Update(float dt)
             if (m_owner->m_cells[i].IsRoom())
             {
                 Cell newRoom = m_owner->m_cells[i];                
-				newRoom.SetRoomIdx(m_owner->m_rooms.size());
+				newRoom.SetRoomIdx((int)m_owner->m_rooms.size());
 				newRoom.SetPos(sf::Vector2i(newRoom.GetPos().x, newRoom.GetPos().y));
                 m_owner->m_rooms.push_back(newRoom);
 				
@@ -245,7 +271,7 @@ void DungeonComponent::DungeonGenerationState_Triangulate::Init(DungeonComponent
     for (int i=0 ; i<roomCount; i++)
     {
         const sf::RectangleShape* renderShape = m_owner->m_rooms[i].GetShape();
-        vertex newVert(renderShape->getOrigin().x - renderShape->getSize().x/2.0f, renderShape->getOrigin().y - renderShape->getSize().y/2.0f);
+        vertex newVert(renderShape->getPosition().x, renderShape->getPosition().y);
         newVert.SetUserData(i);
         m_vertices.insert(newVert);
     }
@@ -273,8 +299,8 @@ void DungeonComponent::DungeonGenerationState_Triangulate::Draw(sf::RenderWindow
     int i=0 ;
     for( edgeIterator it = m_edges.begin() ; it != m_edges.end() ; it++)
     {
-        linesToDraw[i * 2 + 0] = sf::Vector2f(-(*it).m_pV0->GetX(),-(*it).m_pV0->GetY());
-        linesToDraw[i * 2 + 1] = sf::Vector2f(-(*it).m_pV1->GetX(),-(*it).m_pV1->GetY());
+        linesToDraw[i * 2 + 0] = sf::Vector2f((*it).m_pV0->GetX(),(*it).m_pV0->GetY());
+        linesToDraw[i * 2 + 1] = sf::Vector2f((*it).m_pV1->GetX(),(*it).m_pV1->GetY());
         linesToDraw[i*2 + 0].color = sf::Color::Red;
         linesToDraw[i*2 + 1].color = sf::Color::Red;
         i++;
@@ -432,12 +458,31 @@ void DungeonComponent::DungeonGenerationState_AddExtraLinks::Init(DungeonCompone
 			}
 
 			if (!exists)
-			{
+			{				
 				m_owner->m_mstEdges.push_back(currentEdge);
 			}
 		}
 	}
+
+	m_finished = true;
+
+	m_owner->SetState(new DungeonGenerationState_MakeLinksIntoHallways());
 }
+
+void DungeonComponent::DungeonGenerationState_MakeLinksIntoHallways::Init(DungeonComponent * comp)
+{
+	DungeonComponent::DungeonGenerationState::Init(comp);
+
+	for (int i = 0; i < m_owner->m_mstEdges.size(); i++)
+	{
+		Edge& currentEdge = m_owner->m_mstEdges[i];
+		const Cell& fromRoom = m_owner->m_rooms[currentEdge.m_from];
+		const Cell& toRoom = m_owner->m_rooms[currentEdge.m_to];
+	}
+
+	m_finished = true;
+}
+
 
 DungeonComponent::DungeonComponent() :
     m_state(NULL)
@@ -462,7 +507,7 @@ void DungeonComponent::Reset()
 void DungeonComponent::Draw(sf::RenderWindow* window)
 {
 
-	m_grid.Draw(window);
+	//m_grid.Draw(window);
 
     if (m_rooms.size() > 0)
     {
@@ -479,6 +524,11 @@ void DungeonComponent::Draw(sf::RenderWindow* window)
         }
     }
 
+	for (int i = 0; i<m_hallways.size(); i++)
+	{
+		m_hallways[i].Draw(window);
+	}
+
 	for (int i = 0; i < m_mstEdges.size(); i++)
 	{
 		m_mstEdges[i].Draw(window);
@@ -493,15 +543,20 @@ void DungeonComponent::Draw(sf::RenderWindow* window)
 
 void DungeonComponent::Update(float dt)
 {
-    if (m_state)
-    {
-        m_state->Update(dt);
-    }
-    
-    for ( int i=0 ; i<m_cells.size() ; i++)
-    {
-        m_cells[i].Update(dt);
-    }
+	if(!m_state->Finished())
+	{
+		m_state->Update(dt);
+
+		for (int i = 0; i < m_cells.size(); i++)
+		{
+			m_cells[i].Update(dt);
+		}
+
+		for (int i = 0; i < m_hallways.size(); i++)
+		{
+			m_hallways[i].Update(dt);
+		}
+	}	
 }
 
 void DungeonComponent::SetState(DungeonGenerationState *state)
@@ -525,8 +580,8 @@ void Edge::Draw(sf::RenderWindow * window)
 	const Cell& toRoom = m_owner->m_rooms[m_to];
 	sf::Vertex line[] =
 	{
-	sf::Vertex(sf::Vector2f(-fromRoom.GetShape()->getOrigin().x + fromRoom.GetShape()->getSize().x / 2.0f, -fromRoom.GetShape()->getOrigin().y + fromRoom.GetShape()->getSize().y / 2.0f)),
-	sf::Vertex(sf::Vector2f(-toRoom.GetShape()->getOrigin().x + toRoom.GetShape()->getSize().x / 2.0f, -toRoom.GetShape()->getOrigin().y + toRoom.GetShape()->getSize().y / 2.0f))
+	sf::Vertex(sf::Vector2f(fromRoom.GetShape()->getPosition().x, fromRoom.GetShape()->getPosition().y)),
+	sf::Vertex(sf::Vector2f(toRoom.GetShape()->getPosition().x, toRoom.GetShape()->getPosition().y ))
 	};
 
 	window->draw(line, 2, sf::LinesStrip);
@@ -536,12 +591,12 @@ void Edge::Draw(sf::RenderWindow * window)
 	if (font == NULL)
 	{
 		font = new sf::Font();
-		font->loadFromFile("RogueLikeBox\\sansation.ttf");
+		font->loadFromFile("Content\\sansation.ttf");
 	}
 
 	sf::Text weightTxt;
 	weightTxt.setFont(*font);
-	weightTxt.setCharacterSize(15);
+	weightTxt.setCharacterSize(35);
 	weightTxt.setColor(sf::Color::White);
 	weightTxt.setString(std::to_string(m_weight));
 	weightTxt.setPosition(VectorMath::Mul(VectorMath::Add(line[0].position, line[1].position), 0.5f));
@@ -553,7 +608,7 @@ void Edge::Draw(sf::RenderWindow * window)
 		roomTxt.setCharacterSize(20);
 		roomTxt.setColor(sf::Color::Red);
 		roomTxt.setString(std::to_string(m_to));
-		roomTxt.setPosition(-toRoom.GetShape()->getOrigin().x, -toRoom.GetShape()->getOrigin().y);
+		roomTxt.setPosition(toRoom.GetShape()->getPosition().x, toRoom.GetShape()->getPosition().y);
 		window->draw(roomTxt);
 	}
 
@@ -563,7 +618,7 @@ void Edge::Draw(sf::RenderWindow * window)
 		roomTxt.setCharacterSize(20);
 		roomTxt.setColor(sf::Color::Red);
 		roomTxt.setString(std::to_string(m_from));
-		roomTxt.setPosition(-fromRoom.GetShape()->getOrigin().x, -fromRoom.GetShape()->getOrigin().y);
+		roomTxt.setPosition(fromRoom.GetShape()->getPosition().x, fromRoom.GetShape()->getPosition().y);
 		window->draw(roomTxt);
 	}
 }
@@ -607,7 +662,7 @@ void GridCell::Init(int row, int col, int size)
 	m_cellSize = size;
 
 	m_shape.setOutlineColor(sf::Color::Blue);
-	m_shape.setOutlineThickness(CELL_THICKNESS * .2);
+	m_shape.setOutlineThickness(1);
 	m_shape.setSize(sf::Vector2f(m_cellSize, m_cellSize));
 	m_shape.setPosition(m_row * m_cellSize + GRID_OFFSET.x, m_col * m_cellSize + GRID_OFFSET.y);
 }

@@ -25,6 +25,17 @@
   <ItemGroup>
     <ClInclude Include="Game_S.h" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Box2D\v2.3.1\Box2D\Build\vs2013\Box2D.vcxproj">
+      <Project>{98400d17-43a5-1a40-95be-c53ac78e7694}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\GameCommon\RogueLikeWindows.vcxproj">
+      <Project>{aeff76fd-7927-43fe-9396-27ba7abbf7ad}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\Raknet\Source\RakNet.vcxproj">
+      <Project>{143f9b67-c223-4f2d-b8f9-b644ca710ca6}</Project>
+    </ProjectReference>
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{23493449-27F6-4DDB-8916-E279F0DFC336}</ProjectGuid>
     <RootNamespace>GameServerApp</RootNamespace>
@@ -91,12 +102,12 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>..\GameCommon\;..\Box2D\v2.3.1\Box2D\;..\SFML\SFML-2.3.1\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../GameCommon;../Box2D/v2.3.1/Box2D;../SFML/SFML-2.3.1/include</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;SFML_STATIC;_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>GameCommon.lib;Box2D.lib;opengl32.lib;winmm.lib;ws2_32.lib;openal32.lib;jpeg.lib;freetype.lib;sfml-audio-s-d.lib;sfml-graphics-s-d.lib;sfml-main-d.lib;sfml-network-s-d.lib;sfml-system-s-d.lib;sfml-window-s-d.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opengl32.lib;winmm.lib;ws2_32.lib;openal32.lib;jpeg.lib;freetype.lib;sfml-audio-s-d.lib;sfml-graphics-s-d.lib;sfml-main-d.lib;sfml-network-s-d.lib;sfml-system-s-d.lib;sfml-window-s-d.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>../GameCommon/x64/Release;../GameCommon/x64/Debug; ../SFML/SFML-2.3.1/lib;../Box2D\v2.3.1\Box2D\Build\vs2013\bin\x64\Debug;</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
@@ -121,14 +132,14 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>..\GameCommon\;..\Box2D\v2.3.1\Box2D\;..\SFML\SFML-2.3.1\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../GameCommon;../Box2D/v2.3.1/Box2D;../SFML/SFML-2.3.1/include</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;SFML_STATIC;_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>GameCommon.lib; Box2D.lib;opengl32.lib;winmm.lib;ws2_32.lib;openal32.lib;jpeg.lib;freetype.lib;sfml-audio-s.lib;sfml-graphics-s.lib;sfml-main.lib;sfml-network-s.lib;sfml-system-s.lib;sfml-window-s.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opengl32.lib;winmm.lib;ws2_32.lib;openal32.lib;jpeg.lib;freetype.lib;sfml-audio-s.lib;sfml-graphics-s.lib;sfml-main.lib;sfml-network-s.lib;sfml-system-s.lib;sfml-window-s.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>../GameCommon/x64/Release;../GameCommon/x64/Debug; ../SFML/SFML-2.3.1/lib;../Box2D\v2.3.1\Box2D\Build\vs2013\bin\x64\Release;</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>

@@ -15,6 +15,8 @@ class Game_C : public GameCommon
 {
 public:
     void Init();    
+	virtual void Update(float dt);	
+private:	
 };
 
 #endif /* defined(__RogueLikeBox__Game__) */

@@ -13,12 +13,17 @@
 #include "VideoEncodingSystem.h"
 
 void Game_C::Init()
-{
+{	
 	GameCommon::Init();
 
     RegisterSystem(new Box2DSystem());
     RegisterSystem(new DungeonSystem());
 	RegisterSystem(new VideoEncodingSystem());
 
+}
+
+void Game_C::Update(float dt)
+{	
+	GameCommon::Update(dt);
 }
 
